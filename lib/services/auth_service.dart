@@ -9,7 +9,7 @@ abstract class AuthBase {
   Future<User> createUserWithEmailAndPassword(String email, String password);
 }
 
-class Auth implements AuthBase {
+class AuthService implements AuthBase {
   final _firebaseAuth = auth.FirebaseAuth.instance;
 
   User _userFromFirebase(auth.User user) {
