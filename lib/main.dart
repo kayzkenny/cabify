@@ -18,6 +18,9 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Cabify',
+      theme: ThemeData(
+        primaryColor: Colors.greenAccent,
+      ),
       onGenerateRoute: (settings) {
         if (settings.name == '/') {
           return MaterialPageRoute(
