@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class UnknownScreen extends StatelessWidget {
+class UnknownPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

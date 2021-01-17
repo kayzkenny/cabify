@@ -1,51 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:cabify/pages/error_page.dart';
+import 'package:cabify/pages/loading_page.dart';
+import 'package:cabify/pages/auth_wrapper.dart';
 import 'package:cabify/pages/unknown_page.dart';
-import 'package:cabify/pages/landing_page.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:cabify/providers/app_provider.dart';
 import 'package:cabify/pages/authenticate/login_page.dart';
 import 'package:cabify/pages/authenticate/signup_page.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(App());
+  runApp(ProviderScope(child: App()));
 }
 
-class App extends StatelessWidget {
+class App extends HookWidget {
   App({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final _firebaseApp = useProvider(firebaseAppProvider);
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Cabify',
-      theme: ThemeData(
+    return _firebaseApp.when(
+      data: (firebaseApp) => MaterialApp(
+        title: 'Cabify',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
           primaryColor: Colors.greenAccent,
-          textTheme: GoogleFonts.latoTextTheme(textTheme)),
-      onGenerateRoute: (settings) {
-        if (settings.name == '/') {
-          return MaterialPageRoute(
-            builder: (context) => LandingPage(),
-          );
-        }
+          textTheme: GoogleFonts.latoTextTheme(textTheme),
+        ),
+        onGenerateRoute: (settings) {
+          if (settings.name == '/') {
+            return MaterialPageRoute(builder: (context) => AuthWrapper());
+          }
 
-        if (settings.name == '/signup') {
-          return MaterialPageRoute(
-            builder: (context) => SignUpPage(),
-          );
-        }
+          if (settings.name == '/signup') {
+            return MaterialPageRoute(builder: (context) => SignUpPage());
+          }
 
-        if (settings.name == '/login') {
-          return MaterialPageRoute(
-            builder: (context) => LoginPage(),
-          );
-        }
+          if (settings.name == '/login') {
+            return MaterialPageRoute(builder: (context) => LoginPage());
+          }
 
-        return MaterialPageRoute(builder: (context) => UnknownScreen());
-      },
+          return MaterialPageRoute(builder: (context) => UnknownPage());
+        },
+      ),
+      loading: () => LoadingPage(),
+      error: (error, stack) => ErrorPage(error: error, stack: stack),
     );
   }
 }

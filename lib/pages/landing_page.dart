@@ -65,7 +65,7 @@ class LandingPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
-                  onPressed: () {},
+                  onPressed: () => Navigator.pushNamed(context, '/login'),
                   child: Text("Log in"),
                   elevation: 2.0,
                   color: Colors.black,
