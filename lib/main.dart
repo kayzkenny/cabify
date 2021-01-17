@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cabify/pages/unknown_page.dart';
 import 'package:cabify/pages/landing_page.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cabify/pages/authenticate/login_page.dart';
 import 'package:cabify/pages/authenticate/signup_page.dart';
@@ -16,12 +17,14 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Cabify',
       theme: ThemeData(
-        primaryColor: Colors.greenAccent,
-      ),
+          primaryColor: Colors.greenAccent,
+          textTheme: GoogleFonts.latoTextTheme(textTheme)),
       onGenerateRoute: (settings) {
         if (settings.name == '/') {
           return MaterialPageRoute(
