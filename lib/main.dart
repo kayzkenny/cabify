@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cabify/pages/unknown_page.dart';
 import 'package:cabify/pages/landing_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cabify/pages/authenticate/signup_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +18,21 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Cabify',
-      home: LandingPage(),
+      onGenerateRoute: (settings) {
+        if (settings.name == '/') {
+          return MaterialPageRoute(
+            builder: (context) => LandingPage(),
+          );
+        }
+
+        if (settings.name == '/signup') {
+          return MaterialPageRoute(
+            builder: (context) => SignUpPage(),
+          );
+        }
+
+        return MaterialPageRoute(builder: (context) => UnknownScreen());
+      },
     );
   }
 }
