@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,29 +23,87 @@ class App extends StatelessWidget {
 class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
-    // Create a CollectionReference called users that references the firestore collection
-    CollectionReference users = FirebaseFirestore.instance.collection('users');
-
-    Future<void> addUser() {
-      // Call the user's CollectionReference to add a new user
-      return users
-          .add({
-        'full_name': "fullName", // John Doe
-        'company': "company", // Stokes and Sons
-        'age': "age" // 42
-      })
-          .then((value) => print("User Added"))
-          .catchError((error) => print("Failed to add user: $error"));
-    }
-
     return Scaffold(
-      body: Center(
-        child: FlatButton(
-          onPressed: addUser,
-          child: Text(
-            "Add User",
-          ),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          "Cabify",
+          style: TextStyle(color: Colors.black, fontSize: 32.0),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0.0,
+      ),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(32.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            SizedBox(height: 32.0),
+            Icon(
+              Icons.car_rental,
+              size: 100.0,
+            ),
+            SizedBox(height: 64.0),
+            Text(
+              "Welcome.",
+              style: TextStyle(
+                fontSize: 40.0,
+                color: Colors.black45,
+              ),
+            ),
+            Text(
+              "Modern travel",
+              style: TextStyle(
+                fontSize: 40.0,
+                color: Colors.black45,
+              ),
+            ),
+            Text(
+              "Starts here",
+              style: TextStyle(
+                fontSize: 40.0,
+                color: Colors.black45,
+              ),
+            ),
+            SizedBox(height: 64.0),
+            Text(
+              "Setting 700+ cities in motion",
+              style: TextStyle(
+                fontSize: 12.0,
+                color: Colors.black45,
+              ),
+            ),
+            SizedBox(height: 64.0),
+            SizedBox(
+              height: 64.0,
+              child: RaisedButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                onPressed: () {},
+                child: Text("Log in"),
+                elevation: 2.0,
+                color: Colors.black,
+                textColor: Colors.white,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            SizedBox(
+              height: 64.0,
+              child: RaisedButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                onPressed: () {},
+                child: Text("Don\'t have an account? Sign Up"),
+                elevation: 2.0,
+                color: Colors.greenAccent,
+                textColor: Colors.white,
+              ),
+            ),
+          ],
         ),
       ),
     );
