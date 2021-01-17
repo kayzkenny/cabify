@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:cabify/pages/shared/constants.dart';
 
-class SignUpPage extends HookWidget {
-  SignUpPage({Key key}) : super(key: key);
+class LoginPage extends HookWidget {
+  LoginPage({Key key}) : super(key: key);
 
   final formKey = GlobalKey<FormState>();
 
@@ -13,8 +13,6 @@ class SignUpPage extends HookWidget {
     final passwordHidden = useState(true);
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
-    final phoneNumberController = useTextEditingController();
-    final confirmPasswordController = useTextEditingController();
 
     void togglePasswordVisibility() =>
         passwordHidden.value = !passwordHidden.value;
@@ -23,7 +21,7 @@ class SignUpPage extends HookWidget {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          "Sign Up",
+          "Log In",
           style: TextStyle(color: Colors.black, fontSize: 20.0),
         ),
         backgroundColor: Colors.white,
@@ -39,21 +37,6 @@ class SignUpPage extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextFormField(
-                  decoration: kFormInputDecoration.copyWith(
-                    labelText: 'Phone Number',
-                    hintText: 'Phone Number',
-                    prefixIcon: Icon(Icons.phone),
-                  ),
-                  cursorColor: Colors.black12,
-                  validator: (value) => value.isEmpty ? 'Enter an email' : null,
-                  controller: phoneNumberController,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                  ],
-                ),
-                SizedBox(height: 16.0),
                 TextFormField(
                   decoration: kFormInputDecoration.copyWith(
                     labelText: 'Email',
@@ -98,48 +81,6 @@ class SignUpPage extends HookWidget {
                           ),
                   ],
                 ),
-                SizedBox(height: 16.0),
-                Stack(
-                  alignment: Alignment.centerRight,
-                  children: [
-                    TextFormField(
-                      decoration: kFormInputDecoration.copyWith(
-                        labelText: 'Confirm Password',
-                        hintText: '********',
-                      ),
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Enter an email';
-                        }
-
-                        if (value != passwordController.value.text) {
-                          return 'Passwords don\'t match';
-                        }
-
-                        return null;
-                      },
-                      controller: confirmPasswordController,
-                      obscureText: passwordHidden.value,
-                      keyboardType: TextInputType.visiblePassword,
-                      cursorColor: Colors.black12,
-                    ),
-                    passwordHidden.value
-                        ? IconButton(
-                            icon: Icon(Icons.visibility_off),
-                            color: Colors.grey,
-                            onPressed: () {
-                              togglePasswordVisibility();
-                            },
-                          )
-                        : IconButton(
-                            icon: Icon(Icons.visibility),
-                            color: Colors.grey,
-                            onPressed: () {
-                              togglePasswordVisibility();
-                            },
-                          ),
-                  ],
-                ),
                 SizedBox(height: 32.0),
                 SizedBox(
                   height: 64.0,
@@ -152,7 +93,7 @@ class SignUpPage extends HookWidget {
                         print("form ok");
                       }
                     },
-                    child: Text("Sign Up"),
+                    child: Text("Login"),
                     elevation: 2.0,
                     color: Colors.black,
                     textColor: Colors.white,
@@ -165,8 +106,8 @@ class SignUpPage extends HookWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    onPressed: () => Navigator.pushNamed(context, '/login'),
-                    child: Text("Already have an account? Log In"),
+                    onPressed: () {},
+                    child: Text("Don\'t have an account? Sign Up"),
                     elevation: 2.0,
                     color: Colors.greenAccent,
                     textColor: Colors.white,
