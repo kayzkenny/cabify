@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cabify/shared/constants.dart';
+import 'package:cabify/widgets/error_dialog.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:cabify/providers/auth_provider.dart';
 
 class SignUpPage extends HookWidget {
   SignUpPage({Key key}) : super(key: key);
@@ -10,14 +15,51 @@ class SignUpPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loading = useState(false);
     final passwordHidden = useState(true);
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
-    final phoneNumberController = useTextEditingController();
     final confirmPasswordController = useTextEditingController();
 
     void togglePasswordVisibility() =>
         passwordHidden.value = !passwordHidden.value;
+
+    Future<void> createUserWithEmailAndPassword() async {
+      loading.value = true;
+      try {
+        final user = await context
+            .read(authServiceProvider)
+            .createUserWithEmailAndPassword(
+              emailController.text,
+              passwordController.text,
+            );
+
+        if (user != null) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } on PlatformException catch (e) {
+        loading.value = false;
+        showErrorDialog(
+          context: context,
+          title: "Error on Sign In",
+          content: e.message,
+        );
+      } on SocketException catch (e) {
+        loading.value = false;
+        showErrorDialog(
+          context: context,
+          title: "Request Timed Out",
+          content: e.message,
+        );
+      } catch (e) {
+        loading.value = false;
+        showErrorDialog(
+          context: context,
+          title: "Something went wrong",
+          content: "Please try again later",
+        );
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -39,21 +81,6 @@ class SignUpPage extends HookWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextFormField(
-                  decoration: kFormInputDecoration.copyWith(
-                    labelText: 'Phone Number',
-                    hintText: 'Phone Number',
-                    prefixIcon: Icon(Icons.phone),
-                  ),
-                  cursorColor: Colors.black12,
-                  validator: (value) => value.isEmpty ? 'Enter an email' : null,
-                  controller: phoneNumberController,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                  ],
-                ),
-                SizedBox(height: 16.0),
                 TextFormField(
                   decoration: kFormInputDecoration.copyWith(
                     labelText: 'Email',
@@ -149,10 +176,14 @@ class SignUpPage extends HookWidget {
                     ),
                     onPressed: () {
                       if (formKey.currentState.validate()) {
-                        print("form ok");
+                        createUserWithEmailAndPassword();
                       }
                     },
-                    child: Text("Sign Up"),
+                    child: loading.value
+                        ? CircularProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )
+                        : Text("Sign Up"),
                     elevation: 2.0,
                     color: Colors.black,
                     textColor: Colors.white,

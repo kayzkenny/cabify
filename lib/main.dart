@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cabify/pages/error_page.dart';
-import 'package:cabify/pages/loading_page.dart';
 import 'package:cabify/pages/auth_wrapper.dart';
+import 'package:cabify/pages/loading_page.dart';
 import 'package:cabify/pages/unknown_page.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cabify/pages/home/home_page.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:cabify/providers/app_provider.dart';
@@ -42,6 +43,10 @@ class App extends HookWidget {
 
           if (settings.name == '/login') {
             return MaterialPageRoute(builder: (context) => LoginPage());
+          }
+
+          if (settings.name == '/home') {
+            return MaterialPageRoute(builder: (context) => HomePage());
           }
 
           return MaterialPageRoute(builder: (context) => UnknownPage());

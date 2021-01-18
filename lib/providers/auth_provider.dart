@@ -6,6 +6,6 @@ final authServiceProvider = Provider(
   (ref) => AuthService(),
 );
 
-final authStateProvider = StreamProvider.autoDispose<User>(
+final authStateProvider = StreamProvider<User>(
   (ref) => AuthService().onAuthStateChanged,
 );

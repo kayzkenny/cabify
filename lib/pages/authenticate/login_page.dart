@@ -106,7 +106,7 @@ class LoginPage extends HookWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    onPressed: () {},
+                    onPressed: () => Navigator.pushNamed(context, '/signup'),
                     child: Text("Don\'t have an account? Sign Up"),
                     elevation: 2.0,
                     color: Colors.greenAccent,
