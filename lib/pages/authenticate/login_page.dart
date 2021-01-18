@@ -1,7 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cabify/shared/constants.dart';
+import 'package:cabify/widgets/error_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:cabify/providers/auth_provider.dart';
 
 class LoginPage extends HookWidget {
   LoginPage({Key key}) : super(key: key);
@@ -10,12 +16,55 @@ class LoginPage extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loading = useState(false);
     final passwordHidden = useState(true);
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
 
     void togglePasswordVisibility() =>
         passwordHidden.value = !passwordHidden.value;
+
+    Future<void> signInWithEmailAndPassword() async {
+      try {
+        loading.value = true;
+        final user =
+            await context.read(authServiceProvider).signInWithEmailAndPassword(
+                  emailController.text,
+                  passwordController.text,
+                );
+        loading.value = false;
+
+        if (user != null) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } on FirebaseAuthException catch (e) {
+        showErrorDialog(
+          context: context,
+          title: "Error on Log In",
+          content: e.message,
+        );
+      } on PlatformException catch (e) {
+        showErrorDialog(
+          context: context,
+          title: "Error on Log In",
+          content: e.message,
+        );
+      } on SocketException catch (e) {
+        showErrorDialog(
+          context: context,
+          title: "Request Timed Out",
+          content: e.message,
+        );
+      } catch (e) {
+        showErrorDialog(
+          context: context,
+          title: "Something went wrong",
+          content: "Please try again later",
+        );
+      } finally {
+        loading.value = false;
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -90,10 +139,14 @@ class LoginPage extends HookWidget {
                     ),
                     onPressed: () {
                       if (formKey.currentState.validate()) {
-                        print("form ok");
+                        signInWithEmailAndPassword();
                       }
                     },
-                    child: Text("Login"),
+                    child: loading.value
+                        ? CircularProgressIndicator(
+                            backgroundColor: Colors.white,
+                          )
+                        : Text("Login"),
                     elevation: 2.0,
                     color: Colors.black,
                     textColor: Colors.white,

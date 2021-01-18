@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cabify/shared/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cabify/widgets/error_dialog.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -25,39 +26,45 @@ class SignUpPage extends HookWidget {
         passwordHidden.value = !passwordHidden.value;
 
     Future<void> createUserWithEmailAndPassword() async {
-      loading.value = true;
       try {
+        loading.value = true;
         final user = await context
             .read(authServiceProvider)
             .createUserWithEmailAndPassword(
               emailController.text,
               passwordController.text,
             );
+        loading.value = false;
 
         if (user != null) {
           Navigator.pushReplacementNamed(context, '/home');
         }
-      } on PlatformException catch (e) {
-        loading.value = false;
+      } on FirebaseAuthException catch (e) {
         showErrorDialog(
           context: context,
-          title: "Error on Sign In",
+          title: "Error on Sign Up",
+          content: e.message,
+        );
+      } on PlatformException catch (e) {
+        showErrorDialog(
+          context: context,
+          title: "Error on Sign Up",
           content: e.message,
         );
       } on SocketException catch (e) {
-        loading.value = false;
         showErrorDialog(
           context: context,
           title: "Request Timed Out",
           content: e.message,
         );
       } catch (e) {
-        loading.value = false;
         showErrorDialog(
           context: context,
           title: "Something went wrong",
           content: "Please try again later",
         );
+      } finally {
+        loading.value = false;
       }
     }
 
