@@ -1,17 +1,18 @@
+import 'dart:io';
 import 'dart:async';
 
-import 'package:cabify/models/direction_details.dart';
-import 'package:cabify/providers/appstate_provider.dart';
-import 'package:cabify/providers/googlemaps_provider.dart';
-import 'package:cabify/widgets/progress_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:cabify/pages/home/search_bar.dart';
 import 'package:cabify/pages/home/home_drawer.dart';
+import 'package:cabify/widgets/progress_dialog.dart';
+import 'package:cabify/models/direction_details.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cabify/providers/appstate_provider.dart';
+import 'package:cabify/providers/googlemaps_provider.dart';
 import 'package:cabify/providers/geolocation_provider.dart';
 import 'package:cabify/providers/connectivity_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -23,8 +24,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Position currentPosition;
   double searchBarTop = 0.0;
+  BitmapDescriptor nearbyIcon;
   double mapPaddingBottom = 0.0;
   GoogleMapController mapController;
+  Set<Circle> _circles = {};
+  Set<Marker> _markers = {};
+  Set<Polyline> _polylines = {};
   List<LatLng> polylineCoordinates = [];
   DirectionDetails tripDirectionDetails;
   bool isRequestingLocationDetails = false;
@@ -60,35 +65,65 @@ class _HomePageState extends State<HomePage> {
 
     Navigator.pop(context);
 
-    print('----- encoded points -----------');
-    print(thisDetails.encodedPoints);
+    PolylinePoints polylinePoints = PolylinePoints();
+    List<PointLatLng> results = polylinePoints.decodePolyline(
+      thisDetails.encodedPoints,
+    );
+
+    polylineCoordinates.clear();
+
+    if (results.isNotEmpty) {
+      // loop through all PointLatLng points and convert them
+      // to a list of LatLng, required by the Polyline
+      results.forEach((point) {
+        polylineCoordinates.add(
+          LatLng(point.latitude, point.longitude),
+        );
+      });
+    }
+
+    _polylines.clear();
+
+    Polyline polyline = Polyline(
+      polylineId: PolylineId('polyid'),
+      color: Color.fromARGB(255, 95, 109, 237),
+      points: polylineCoordinates,
+      jointType: JointType.round,
+      width: 4,
+      startCap: Cap.roundCap,
+      endCap: Cap.roundCap,
+      geodesic: true,
+    );
+
+    setState(() => _polylines.add(polyline));
   }
 
   Future<void> showDetailSheet() async {
     await getDirection();
-    // setState(() {
-    // searchBarTop = 0.0;
-    // rideDetailsSheetHeight = 270;
-    // mapBottomPadding = 0; depends on platfrom
-    // });
-    // showModalBottomSheet<void>(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return Container(
-    //       child: Padding(
-    //         padding: const EdgeInsets.all(32.0),
-    //         child: Text(
-    //           'This is the modal bottom sheet. Slide down to dismiss.',
-    //           textAlign: TextAlign.center,
-    //           style: TextStyle(
-    //             color: Theme.of(context).accentColor,
-    //             fontSize: 24.0,
-    //           ),
-    //         ),
-    //       ),
-    //     );
-    //   },
-    // );
+    setState(() {
+      // searchBarTop = -100.0;
+      // rideDetailsSheetHeight = 270;
+      mapPaddingBottom = Platform.isIOS ? 270.0 : 300.0; // depends on platfrom
+    });
+
+    var detailSheetController =
+        scaffoldKey.currentState.showBottomSheet((context) => Container(
+              height: 270.0,
+              color: Colors.white,
+              padding: const EdgeInsets.all(32.0),
+              child: Center(
+                child: Text(
+                  'This is the modal bottom sheet. Slide down to dismiss.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Theme.of(context).accentColor,
+                    fontSize: 24.0,
+                  ),
+                ),
+              ),
+            ));
+
+    // detailSheetController.close;
   }
 
   Future<void> setPosition() async {
@@ -125,14 +160,15 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         children: [
           GoogleMap(
-            padding: EdgeInsets.only(bottom: mapPaddingBottom),
-            initialCameraPosition: _kGooglePlex,
-            myLocationEnabled: true,
+            polylines: _polylines,
             mapType: MapType.normal,
-            onMapCreated: (GoogleMapController controller) async {
+            myLocationEnabled: true,
+            initialCameraPosition: _kGooglePlex,
+            padding: EdgeInsets.only(bottom: mapPaddingBottom),
+            onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               setState(() => searchBarTop = 64.0);
-              await setPosition();
+              setPosition();
             },
           ),
           AnimatedPositioned(
