@@ -8,58 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cabify/providers/geolocation_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-// class HomePage extends HookWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     final searchBarTop = useState(0.0);
-//     final scaffoldKey = GlobalKey<ScaffoldState>();
-//     Completer<GoogleMapController> _controller = Completer();
-//     // GoogleMapController mapController;
-//     final currentPosition = useState<Position>();
-
-//     final CameraPosition _kGooglePlex = CameraPosition(
-//       target: LatLng(37.42796133580664, -122.085749655962),
-//       zoom: 14.4746,
-//     );
-
-//     Future<void> setPosition() async {
-//       final position =
-//           await context.read(geolocationProvider).getCurrentPosition();
-//       currentPosition.value = position;
-
-//       final pos = LatLng(position.latitude, position.longitude);
-//       CameraPosition cp = CameraPosition(target: pos, zoom: 14);
-//       final GoogleMapController controller = await _controller.future;
-//       controller.animateCamera(CameraUpdate.newCameraPosition(cp));
-//     }
-
-//     return Scaffold(
-//       key: scaffoldKey,
-//       drawer: Container(
-//         width: 250,
-//         color: Colors.white,
-//         child: HomeDrawer(),
-//       ),
-//       body: Stack(
-//         children: [
-//           GoogleMap(
-//             initialCameraPosition: _kGooglePlex,
-//             onMapCreated: (GoogleMapController controller) async {
-//               _controller.complete(controller);
-//               searchBarTop.value = 64.0;
-//               await setPosition();
-//             },
-//           ),
-//           SearchBar(
-//             searchBarTop: searchBarTop,
-//             scaffoldKey: scaffoldKey,
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
@@ -88,6 +36,13 @@ class _HomePageState extends State<HomePage> {
     CameraPosition cp = CameraPosition(target: pos, zoom: 14);
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(cp));
+
+    String address = await context
+        .read(geolocationProvider)
+        .findCoordinateAddress(position, context);
+
+    print('--------------- printing address --------------');
+    print(address);
   }
 
   @override
@@ -104,6 +59,8 @@ class _HomePageState extends State<HomePage> {
           GoogleMap(
             padding: EdgeInsets.only(bottom: mapPaddingBottom),
             initialCameraPosition: _kGooglePlex,
+            myLocationEnabled: true,
+            mapType: MapType.normal,
             onMapCreated: (GoogleMapController controller) async {
               _controller.complete(controller);
               setState(() => searchBarTop = 64.0);
