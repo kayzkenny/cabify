@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 
+import 'package:cabify/models/address_model.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cabify/pages/home/home_drawer.dart';
@@ -25,11 +26,11 @@ class _HomePageState extends State<HomePage> {
   Position currentPosition;
   double searchBarTop = 0.0;
   BitmapDescriptor nearbyIcon;
-  double mapPaddingBottom = 0.0;
-  GoogleMapController mapController;
-  Set<Circle> _circles = {};
   Set<Marker> _markers = {};
+  Set<Circle> _circles = {};
   Set<Polyline> _polylines = {};
+  double mapPaddingBottom = 0.0;
+  // GoogleMapController mapController;
   List<LatLng> polylineCoordinates = [];
   DirectionDetails tripDirectionDetails;
   bool isRequestingLocationDetails = false;
@@ -42,32 +43,59 @@ class _HomePageState extends State<HomePage> {
     zoom: 14.4746,
   );
 
-  Future<void> getDirection() async {
-    final pickup = context.read(appStateProvider).pickupAddress;
-    final destination = context.read(appStateProvider).destinationAddress;
-    final pickLatLng = LatLng(pickup.latitude, pickup.longitude);
-    final destinationLatLng =
-        LatLng(destination.latitude, destination.longitude);
+  Future<void> fitPolylinesOnMap(
+    LatLng pickLatLng,
+    LatLng destinationLatLng,
+  ) async {
+    // make polyline fit inside the map
+    LatLngBounds bounds;
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => ProgressDialog(status: 'Please wait...'),
+    if (pickLatLng.latitude > destinationLatLng.latitude &&
+        pickLatLng.longitude > destinationLatLng.longitude) {
+      bounds = LatLngBounds(
+        southwest: destinationLatLng,
+        northeast: pickLatLng,
+      );
+    } else if (pickLatLng.longitude > destinationLatLng.longitude) {
+      bounds = LatLngBounds(
+        southwest: LatLng(
+          pickLatLng.latitude,
+          destinationLatLng.longitude,
+        ),
+        northeast: LatLng(
+          destinationLatLng.latitude,
+          pickLatLng.longitude,
+        ),
+      );
+    } else if (pickLatLng.latitude > destinationLatLng.latitude) {
+      bounds = LatLngBounds(
+        southwest: LatLng(
+          destinationLatLng.latitude,
+          pickLatLng.longitude,
+        ),
+        northeast: LatLng(
+          pickLatLng.latitude,
+          destinationLatLng.longitude,
+        ),
+      );
+    } else {
+      bounds = LatLngBounds(
+        southwest: pickLatLng,
+        northeast: destinationLatLng,
+      );
+    }
+
+    final GoogleMapController controller = await _controller.future;
+
+    controller.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 70),
     );
+  }
 
-    final thisDetails =
-        await context.read(googleMapsProvider).getDirectionDetails(
-              pickLatLng,
-              destinationLatLng,
-            );
-
-    setState(() => tripDirectionDetails = thisDetails);
-
-    Navigator.pop(context);
-
+  void drawPolylinesOnMap(DirectionDetails directionDetails) {
     PolylinePoints polylinePoints = PolylinePoints();
     List<PointLatLng> results = polylinePoints.decodePolyline(
-      thisDetails.encodedPoints,
+      directionDetails.encodedPoints,
     );
 
     polylineCoordinates.clear();
@@ -98,30 +126,118 @@ class _HomePageState extends State<HomePage> {
     setState(() => _polylines.add(polyline));
   }
 
+  Future<void> getDirection() async {
+    final pickup = context.read(appStateProvider).pickupAddress;
+    final destination = context.read(appStateProvider).destinationAddress;
+    final pickLatLng = LatLng(pickup.latitude, pickup.longitude);
+    final destinationLatLng =
+        LatLng(destination.latitude, destination.longitude);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ProgressDialog(status: 'Please wait...'),
+    );
+
+    final thisDetails =
+        await context.read(googleMapsProvider).getDirectionDetails(
+              pickLatLng,
+              destinationLatLng,
+            );
+
+    setState(() => tripDirectionDetails = thisDetails);
+    Navigator.pop(context);
+
+    drawPolylinesOnMap(thisDetails);
+    fitPolylinesOnMap(pickLatLng, destinationLatLng);
+    showMarkers(
+      destination: destination,
+      destinationLatLng: destinationLatLng,
+      pickLatLng: pickLatLng,
+      pickup: pickup,
+    );
+  }
+
+  void showMarkers({
+    LatLng pickLatLng,
+    LatLng destinationLatLng,
+    Address pickup,
+    Address destination,
+  }) {
+    Marker pickupMarker = Marker(
+      position: pickLatLng,
+      markerId: MarkerId('pickup'),
+      infoWindow: InfoWindow(
+        title: pickup.placeName,
+        snippet: 'My Location',
+      ),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+    );
+
+    Marker destinationMarker = Marker(
+      position: destinationLatLng,
+      markerId: MarkerId('destination'),
+      infoWindow: InfoWindow(
+        title: destination.placeName,
+        snippet: 'Destination',
+      ),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+    );
+
+    setState(() {
+      _markers.add(pickupMarker);
+      _markers.add(destinationMarker);
+    });
+
+    Circle pickupCircle = Circle(
+      circleId: CircleId('pickup'),
+      strokeColor: Colors.greenAccent,
+      strokeWidth: 3,
+      radius: 12,
+      center: pickLatLng,
+      fillColor: Colors.greenAccent,
+    );
+
+    Circle destinationCircle = Circle(
+      circleId: CircleId('destination'),
+      strokeColor: Colors.greenAccent,
+      strokeWidth: 3,
+      radius: 12,
+      center: pickLatLng,
+      fillColor: Colors.greenAccent,
+    );
+
+    setState(() {
+      _circles.add(pickupCircle);
+      _circles.add(destinationCircle);
+    });
+  }
+
   Future<void> showDetailSheet() async {
     await getDirection();
     setState(() {
       // searchBarTop = -100.0;
       // rideDetailsSheetHeight = 270;
-      mapPaddingBottom = Platform.isIOS ? 270.0 : 300.0; // depends on platfrom
+      // mapPaddingBottom = Platform.isIOS ? 270.0 : 300.0; // depends on platfrom
     });
 
-    var detailSheetController =
-        scaffoldKey.currentState.showBottomSheet((context) => Container(
-              height: 270.0,
-              color: Colors.white,
-              padding: const EdgeInsets.all(32.0),
-              child: Center(
-                child: Text(
-                  'This is the modal bottom sheet. Slide down to dismiss.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).accentColor,
-                    fontSize: 24.0,
-                  ),
-                ),
-              ),
-            ));
+    // var detailSheetController = scaffoldKey.currentState.showBottomSheet(
+    //   (context) => Container(
+    //     height: 270.0,
+    //     color: Colors.white,
+    //     padding: const EdgeInsets.all(32.0),
+    //     child: Center(
+    //       child: Text(
+    //         'This is the modal bottom sheet. Slide down to dismiss.',
+    //         textAlign: TextAlign.center,
+    //         style: TextStyle(
+    //           color: Theme.of(context).accentColor,
+    //           fontSize: 24.0,
+    //         ),
+    //       ),
+    //     ),
+    //   ),
+    // );
 
     // detailSheetController.close;
   }
@@ -148,8 +264,24 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> createMarker() async {
+    if (nearbyIcon == null) {
+      ImageConfiguration imageConfiguration = createLocalImageConfiguration(
+        context,
+        size: Size(2, 2),
+      );
+
+      nearbyIcon = await BitmapDescriptor.fromAssetImage(
+        imageConfiguration,
+        (Platform.isIOS) ? 'images/car_ios.png' : 'images/car_android.png',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    createMarker();
+
     return Scaffold(
       key: scaffoldKey,
       drawer: Container(
@@ -160,11 +292,13 @@ class _HomePageState extends State<HomePage> {
       body: Stack(
         children: [
           GoogleMap(
+            markers: _markers,
+            circles: _circles,
             polylines: _polylines,
             mapType: MapType.normal,
             myLocationEnabled: true,
             initialCameraPosition: _kGooglePlex,
-            padding: EdgeInsets.only(bottom: mapPaddingBottom),
+            padding: EdgeInsets.only(bottom: mapPaddingBottom, top: 264),
             onMapCreated: (GoogleMapController controller) {
               _controller.complete(controller);
               setState(() => searchBarTop = 64.0);
