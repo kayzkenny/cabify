@@ -5,8 +5,7 @@ import 'package:cabify/pages/loading_page.dart';
 import 'package:cabify/pages/unknown_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cabify/pages/home/home_page.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cabify/providers/app_provider.dart';
 import 'package:cabify/pages/authenticate/login_page.dart';
 import 'package:cabify/pages/authenticate/signup_page.dart';
@@ -16,13 +15,13 @@ void main() {
   runApp(ProviderScope(child: App()));
 }
 
-class App extends HookWidget {
+class App extends ConsumerWidget {
   App({Key key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, ScopedReader watch) {
     final textTheme = Theme.of(context).textTheme;
-    final _firebaseApp = useProvider(firebaseAppProvider);
+    final _firebaseApp = watch(firebaseAppProvider);
 
     return _firebaseApp.when(
       data: (firebaseApp) => MaterialApp(

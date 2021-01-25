@@ -5,34 +5,38 @@ import 'package:flutter/services.dart';
 import 'package:cabify/shared/constants.dart';
 import 'package:cabify/widgets/error_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:cabify/providers/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginPage extends HookWidget {
+class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
 
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    final loading = useState(false);
-    final passwordHidden = useState(true);
-    final emailController = useTextEditingController();
-    final passwordController = useTextEditingController();
+    bool loading = false;
+    bool passwordHidden = true;
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
 
     void togglePasswordVisibility() =>
-        passwordHidden.value = !passwordHidden.value;
+        setState(() => passwordHidden = !passwordHidden);
 
     Future<void> signInWithEmailAndPassword() async {
       try {
-        loading.value = true;
+        setState(() => loading = true);
         final user =
             await context.read(authServiceProvider).signInWithEmailAndPassword(
                   emailController.text,
                   passwordController.text,
                 );
-        loading.value = false;
+        setState(() => loading = false);
 
         if (user != null) {
           Navigator.pushReplacementNamed(context, '/home');
@@ -62,7 +66,7 @@ class LoginPage extends HookWidget {
           content: "Please try again later",
         );
       } finally {
-        loading.value = false;
+        setState(() => loading = false);
       }
     }
 
@@ -106,14 +110,14 @@ class LoginPage extends HookWidget {
                         labelText: 'Password',
                         hintText: '********',
                       ),
-                      obscureText: passwordHidden.value,
+                      obscureText: passwordHidden,
                       validator: (value) =>
                           value.isEmpty ? 'Enter an email' : null,
                       controller: passwordController,
                       keyboardType: TextInputType.visiblePassword,
                       cursorColor: Colors.black12,
                     ),
-                    passwordHidden.value
+                    passwordHidden
                         ? IconButton(
                             icon: Icon(Icons.visibility_off),
                             color: Colors.grey,
@@ -142,7 +146,7 @@ class LoginPage extends HookWidget {
                         signInWithEmailAndPassword();
                       }
                     },
-                    child: loading.value
+                    child: loading
                         ? CircularProgressIndicator(
                             backgroundColor: Colors.white,
                           )

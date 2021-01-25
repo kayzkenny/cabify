@@ -5,36 +5,41 @@ import 'package:flutter/services.dart';
 import 'package:cabify/shared/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cabify/widgets/error_dialog.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:cabify/providers/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SignUpPage extends HookWidget {
+class SignUpPage extends StatefulWidget {
   SignUpPage({Key key}) : super(key: key);
 
+  @override
+  _SignUpPageState createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  bool loading = false;
+  bool passwordHidden = true;
   final formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
-    final loading = useState(false);
-    final passwordHidden = useState(true);
-    final emailController = useTextEditingController();
-    final passwordController = useTextEditingController();
-    final confirmPasswordController = useTextEditingController();
-
+  Widget build(
+    BuildContext context,
+  ) {
     void togglePasswordVisibility() =>
-        passwordHidden.value = !passwordHidden.value;
+        setState(() => passwordHidden = !passwordHidden);
 
     Future<void> createUserWithEmailAndPassword() async {
       try {
-        loading.value = true;
+        setState(() => loading = true);
         final user = await context
             .read(authServiceProvider)
             .createUserWithEmailAndPassword(
               emailController.text,
               passwordController.text,
             );
-        loading.value = false;
+        setState(() => loading = false);
 
         if (user != null) {
           Navigator.pushReplacementNamed(context, '/home');
@@ -64,7 +69,7 @@ class SignUpPage extends HookWidget {
           content: "Please try again later",
         );
       } finally {
-        loading.value = false;
+        setState(() => loading = false);
       }
     }
 
@@ -108,14 +113,14 @@ class SignUpPage extends HookWidget {
                         labelText: 'Password',
                         hintText: '********',
                       ),
-                      obscureText: passwordHidden.value,
+                      obscureText: passwordHidden,
                       validator: (value) =>
                           value.isEmpty ? 'Enter an email' : null,
                       controller: passwordController,
                       keyboardType: TextInputType.visiblePassword,
                       cursorColor: Colors.black12,
                     ),
-                    passwordHidden.value
+                    passwordHidden
                         ? IconButton(
                             icon: Icon(Icons.visibility_off),
                             color: Colors.grey,
@@ -153,11 +158,11 @@ class SignUpPage extends HookWidget {
                         return null;
                       },
                       controller: confirmPasswordController,
-                      obscureText: passwordHidden.value,
+                      obscureText: passwordHidden,
                       keyboardType: TextInputType.visiblePassword,
                       cursorColor: Colors.black12,
                     ),
-                    passwordHidden.value
+                    passwordHidden
                         ? IconButton(
                             icon: Icon(Icons.visibility_off),
                             color: Colors.grey,
@@ -186,7 +191,7 @@ class SignUpPage extends HookWidget {
                         createUserWithEmailAndPassword();
                       }
                     },
-                    child: loading.value
+                    child: loading
                         ? CircularProgressIndicator(
                             backgroundColor: Colors.white,
                           )

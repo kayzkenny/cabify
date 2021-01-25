@@ -7,7 +7,7 @@ class SearchBar extends StatelessWidget {
     @required this.scaffoldKey,
   }) : super(key: key);
 
-  final ValueNotifier<double> searchBarTop;
+  final double searchBarTop;
   final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
@@ -17,10 +17,10 @@ class SearchBar extends StatelessWidget {
       curve: Curves.fastOutSlowIn,
       left: 0.0,
       right: 0.0,
-      top: searchBarTop.value,
+      top: searchBarTop,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 32.0),
-        padding: EdgeInsets.symmetric(horizontal: 10.0),
+        margin: const EdgeInsets.symmetric(horizontal: 32.0),
+        padding: const EdgeInsets.symmetric(horizontal: 10.0),
         height: 48.0,
         // width: 360.0,
         decoration: BoxDecoration(
@@ -42,7 +42,7 @@ class SearchBar extends StatelessWidget {
               onTap: () {
                 print('text field pressed');
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 // labelText: 'Where to?',
                 hintText: 'Where to?',
                 prefixIcon: Icon(
