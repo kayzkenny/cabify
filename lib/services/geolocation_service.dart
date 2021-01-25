@@ -1,12 +1,11 @@
-import 'package:cabify/models/address_model.dart';
-import 'package:cabify/providers/appstate_provider.dart';
-import 'package:cabify/services/request_helper.dart';
-import 'package:cabify/shared/api_keys.dart';
-import 'package:cabify/shared/endpoints.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:cabify/shared/api_keys.dart';
+import 'package:cabify/shared/endpoints.dart';
+import 'package:cabify/models/address_model.dart';
+import 'package:cabify/services/request_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cabify/providers/appstate_provider.dart';
 
 class GeolocationService {
   Future<Position> getCurrentPosition({
@@ -22,12 +21,6 @@ class GeolocationService {
     BuildContext context,
   ) async {
     String placeAddress = "";
-
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult != ConnectivityResult.mobile &&
-        connectivityResult != ConnectivityResult.wifi) {
-      return placeAddress;
-    }
 
     String url =
         '$geocodeEndpoint?latlng=${position.latitude},${position.longitude}&key=${APIKeys.googleMaps}';

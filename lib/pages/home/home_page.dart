@@ -6,6 +6,7 @@ import 'package:cabify/pages/home/search_bar.dart';
 import 'package:cabify/pages/home/home_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cabify/providers/geolocation_provider.dart';
+import 'package:cabify/providers/connectivity_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class HomePage extends StatefulWidget {
@@ -37,12 +38,14 @@ class _HomePageState extends State<HomePage> {
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(cp));
 
-    String address = await context
-        .read(geolocationProvider)
-        .findCoordinateAddress(position, context);
+    bool connected =
+        await context.read(connectivityProvider).connectivityAvailable();
 
-    print('--------------- printing address --------------');
-    print(address);
+    if (connected) {
+      String address = await context
+          .read(geolocationProvider)
+          .findCoordinateAddress(position, context);
+    }
   }
 
   @override
