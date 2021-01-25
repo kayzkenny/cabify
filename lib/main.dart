@@ -5,8 +5,9 @@ import 'package:cabify/pages/loading_page.dart';
 import 'package:cabify/pages/unknown_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cabify/pages/home/home_page.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cabify/providers/app_provider.dart';
+import 'package:cabify/pages/search/search_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cabify/pages/authenticate/login_page.dart';
 import 'package:cabify/pages/authenticate/signup_page.dart';
 
@@ -38,6 +39,10 @@ class App extends ConsumerWidget {
 
           if (settings.name == '/signup') {
             return MaterialPageRoute(builder: (context) => SignUpPage());
+          }
+
+          if (settings.name == '/search') {
+            return MaterialPageRoute(builder: (context) => SearchPage());
           }
 
           if (settings.name == '/login') {

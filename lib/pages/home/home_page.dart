@@ -45,6 +45,8 @@ class _HomePageState extends State<HomePage> {
       String address = await context
           .read(geolocationProvider)
           .findCoordinateAddress(position, context);
+
+      print(address);
     }
   }
 

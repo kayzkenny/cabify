@@ -40,7 +40,7 @@ class SearchBar extends StatelessWidget {
           children: [
             TextFormField(
               onTap: () {
-                print('text field pressed');
+                Navigator.pushNamed(context, '/search');
               },
               decoration: const InputDecoration(
                 // labelText: 'Where to?',
