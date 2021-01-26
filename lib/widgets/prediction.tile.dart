@@ -46,7 +46,12 @@ class PredictionTile extends StatelessWidget {
 
       print(thisPlace.placeName);
 
-      Navigator.pop(context, 'getDirection');
+      // Navigator.pop(context, 'getDirection');
+
+      Navigator.pushNamed(
+        context,
+        '/requestcab',
+      );
     }
   }
 
