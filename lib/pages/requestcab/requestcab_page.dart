@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:cabify/shared/constants.dart';
 import 'package:cabify/models/address_model.dart';
 import 'package:cabify/widgets/taxi_widgets.dart';
 import 'package:cabify/widgets/progress_dialog.dart';
@@ -32,20 +33,16 @@ class _RequestCabPageState extends State<RequestCabPage> {
   List<LatLng> polylineCoordinates = [];
   bool isRequestingLocationDetails = false;
   PersistentBottomSheetController detailSheetController;
+  PersistentBottomSheetController requestSheetController;
   Completer<GoogleMapController> _controller = Completer();
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
-
+  /// make polyline fit inside the map
   Future<void> fitPolylinesOnMap(
     LatLng pickLatLng,
     LatLng destinationLatLng,
   ) async {
-    // make polyline fit inside the map
     LatLngBounds bounds;
 
     if (pickLatLng.latitude > destinationLatLng.latitude &&
@@ -211,10 +208,82 @@ class _RequestCabPageState extends State<RequestCabPage> {
     );
   }
 
+  Future<void> cancelRequest() async {
+    // await rideRef.remove();
+    closeRequestSheet();
+    Navigator.pop(context);
+
+    setState(() {
+      appState = 'NORMAL';
+    });
+  }
+
+  Future<void> showRequestSheet() async {
+    var _requestSheetController = scaffoldKey.currentState.showBottomSheet(
+      (context) {
+        return Container(
+          height: 240.0,
+          padding: EdgeInsets.symmetric(vertical: 18.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 15.0,
+                spreadRadius: 0.5,
+                offset: Offset(0.7, 0.7),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Text(
+                'Requesting a Ride',
+                style: TextStyle(fontSize: 22.0),
+              ),
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    strokeWidth: 2.0,
+                    backgroundColor: Colors.transparent,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.close, size: 25),
+                    onPressed: () async {
+                      await cancelRequest();
+                      // await resetApp();
+                    },
+                  ),
+                ],
+              ),
+              Container(
+                width: double.infinity,
+                child: Text(
+                  'Cancel Ride',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12),
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+
+    setState(() => requestSheetController = _requestSheetController);
+  }
+
+  void closeRequestSheet() => requestSheetController.close();
+
   Future<void> showDetailSheet() async {
     await getDirection();
     setState(() {
-      // searchBarTop = -100.0;
       // rideDetailsSheetHeight = 270;
       mapPaddingBottom = Platform.isIOS ? 270.0 : 300.0; // depends on platfrom
     });
@@ -275,6 +344,7 @@ class _RequestCabPageState extends State<RequestCabPage> {
                         '\$${context.read(googleMapsProvider).estimateFares(tripDirectionDetails)}',
                         style: TextStyle(
                           fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                   ],
@@ -310,7 +380,7 @@ class _RequestCabPageState extends State<RequestCabPage> {
                   onPressed: () async {
                     setState(() => appState = 'REQUESTING');
                     closeDetailSheet();
-                    // await showRequestingSheet();
+                    await showRequestSheet();
                     // availableDrivers = FireHelper.nearbyDriverList;
                     // await findDriver();
                   },
@@ -378,22 +448,20 @@ class _RequestCabPageState extends State<RequestCabPage> {
         backgroundColor: Colors.white,
         elevation: 0.0,
       ),
-      body: SafeArea(
-        child: GoogleMap(
-          markers: _markers,
-          circles: _circles,
-          polylines: _polylines,
-          mapType: MapType.normal,
-          myLocationEnabled: true,
-          initialCameraPosition: _kGooglePlex,
-          padding: EdgeInsets.only(bottom: mapPaddingBottom),
-          onMapCreated: (GoogleMapController controller) {
-            _controller.complete(controller);
-            // setState(() => searchBarTop = 64.0);
-            setPosition();
-            showDetailSheet();
-          },
-        ),
+      body: GoogleMap(
+        markers: _markers,
+        circles: _circles,
+        polylines: _polylines,
+        mapType: MapType.normal,
+        myLocationEnabled: true,
+        initialCameraPosition: kGooglePlex,
+        padding: EdgeInsets.only(bottom: mapPaddingBottom),
+        onMapCreated: (GoogleMapController controller) {
+          _controller.complete(controller);
+          // setState(() => searchBarTop = 64.0);
+          setPosition();
+          showDetailSheet();
+        },
       ),
     );
   }

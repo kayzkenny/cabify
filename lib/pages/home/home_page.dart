@@ -7,6 +7,7 @@ import 'package:cabify/pages/home/search_bar.dart';
 import 'package:cabify/pages/home/home_drawer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cabify/providers/geolocation_provider.dart';
+import 'package:cabify/providers/connectivity_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class HomePage extends StatefulWidget {
@@ -26,13 +27,24 @@ class _HomePageState extends State<HomePage> {
   Future<void> setPosition() async {
     final position =
         await context.read(geolocationProvider).getCurrentPosition();
-
     setState(() => currentPosition = position);
 
     final pos = LatLng(position.latitude, position.longitude);
     CameraPosition cp = CameraPosition(target: pos, zoom: 14);
     final GoogleMapController controller = await _controller.future;
     controller.animateCamera(CameraUpdate.newCameraPosition(cp));
+
+    bool connected =
+        await context.read(connectivityProvider).connectivityAvailable();
+
+    if (connected) {
+      String address = await context
+          .read(geolocationProvider)
+          .findCoordinateAddress(position, context);
+
+      print('------------ printing address ---------------');
+      print(address);
+    }
   }
 
   @override
@@ -56,10 +68,7 @@ class _HomePageState extends State<HomePage> {
               setPosition();
             },
           ),
-          SearchBar(
-            searchBarTop: searchBarTop,
-            scaffoldKey: scaffoldKey,
-          ),
+          SearchBar(searchBarTop: searchBarTop, scaffoldKey: scaffoldKey),
         ],
       ),
     );

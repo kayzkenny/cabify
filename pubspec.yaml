@@ -21,13 +21,16 @@ dev_dependencies:
   google_fonts: ^1.1.1
   connectivity: ^2.0.2
   firebase_core: ^0.7.0
-  state_notifier: ^0.6.0
   firebase_auth: ^0.20.0+1
   firebase_storage: ^7.0.0
   cloud_firestore: ^0.16.0
   flutter_riverpod: ^0.12.2
+  animated_text_kit: ^3.1.0
   google_maps_flutter: ^1.1.1
   flutter_polyline_points: ^0.2.4
+  geoflutterfire:
+    git:
+      url: https://github.com/awaik/GeoFlutterFire
 
 flutter:
 
