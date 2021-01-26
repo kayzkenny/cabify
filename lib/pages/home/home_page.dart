@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:cabify/providers/appstate_provider.dart';
+import 'package:cabify/providers/database_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:cabify/shared/constants.dart';
@@ -45,6 +47,17 @@ class _HomePageState extends State<HomePage> {
       print('------------ printing address ---------------');
       print(address);
     }
+  }
+
+  Future<void> setCurrentUserData() async {
+    final currentUserdata = await context.read(databaseProvider).userDataFuture;
+    context.read(appStateProvider).updateCurrentUserData(currentUserdata);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setCurrentUserData();
   }
 
   @override

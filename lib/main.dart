@@ -6,6 +6,7 @@ import 'package:cabify/pages/unknown_page.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cabify/providers/app_provider.dart';
 import 'package:cabify/pages/search/search_page.dart';
+import 'package:cabify/pages/profile/profile_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cabify/pages/authenticate/login_page.dart';
 import 'package:cabify/pages/authenticate/signup_page.dart';
@@ -51,6 +52,10 @@ class App extends ConsumerWidget {
 
           if (settings.name == '/requestcab') {
             return MaterialPageRoute(builder: (context) => RequestCabPage());
+          }
+
+          if (settings.name == '/profile') {
+            return MaterialPageRoute(builder: (context) => ProfilePage());
           }
 
           return MaterialPageRoute(builder: (context) => UnknownPage());

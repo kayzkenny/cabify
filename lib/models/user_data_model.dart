@@ -3,18 +3,21 @@ class UserData {
   final String email;
   final String username;
   final String avatarURL;
+  final String phoneNumber;
 
   UserData({
     this.uid,
     this.email,
     this.username,
     this.avatarURL,
+    this.phoneNumber,
   });
 
   /// Convert userData to map such as a firestore document
   Map<String, dynamic> toMap() {
     return {
       'username': username,
+      'phoneNumber': phoneNumber,
     };
   }
 
@@ -30,12 +33,14 @@ class UserData {
     final String email = data['email'];
     final String username = data['username'];
     final String avatarURL = data['avatarURL'];
+    final String phoneNumber = data['phoneNumber'];
 
     return UserData(
       email: email,
       uid: documentId,
       username: username ?? null,
       avatarURL: avatarURL ?? null,
+      phoneNumber: phoneNumber ?? null,
     );
   }
 }

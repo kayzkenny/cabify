@@ -22,11 +22,6 @@ class HomeDrawer extends StatelessWidget {
                 decoration: BoxDecoration(color: Colors.white),
                 child: Row(
                   children: [
-                    // Image.asset(
-                    //   'images/user_icon.png',
-                    //   height: 60,
-                    //   width: 60,
-                    // ),
                     Icon(
                       Icons.person_rounded,
                       size: 60.0,
@@ -41,10 +36,7 @@ class HomeDrawer extends StatelessWidget {
                         children: [
                           Text(
                             'Kenny',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: 'Brand-Bold',
-                            ),
+                            style: TextStyle(fontSize: 20),
                             overflow: TextOverflow.clip,
                           ),
                           SizedBox(height: 4),
