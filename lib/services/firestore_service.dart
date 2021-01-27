@@ -36,12 +36,13 @@ class FirestoreService {
   }
 
   /// Adds the [data] to the collection at this [path]
-  Future<void> addData({
+  Future<String> addData({
     @required String path,
     @required Map<String, dynamic> data,
   }) async {
     final reference = FirebaseFirestore.instance.collection(path);
-    await reference.add(data);
+    final docRef = await reference.add(data);
+    return docRef.id;
   }
 
   /// Adds the [data] to the array at this [path]

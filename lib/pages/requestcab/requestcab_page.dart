@@ -6,9 +6,12 @@ import 'package:geolocator/geolocator.dart';
 import 'package:cabify/shared/constants.dart';
 import 'package:cabify/models/address_model.dart';
 import 'package:cabify/widgets/taxi_widgets.dart';
+import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:cabify/widgets/progress_dialog.dart';
 import 'package:cabify/models/direction_details.dart';
+import 'package:cabify/models/ride_request_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cabify/providers/database_provider.dart';
 import 'package:cabify/providers/appstate_provider.dart';
 import 'package:cabify/providers/googlemaps_provider.dart';
 import 'package:cabify/providers/geolocation_provider.dart';
@@ -22,6 +25,7 @@ class RequestCabPage extends StatefulWidget {
 }
 
 class _RequestCabPageState extends State<RequestCabPage> {
+  String rideRefId;
   Position currentPosition;
   Set<Marker> _markers = {};
   Set<Circle> _circles = {};
@@ -218,7 +222,44 @@ class _RequestCabPageState extends State<RequestCabPage> {
     });
   }
 
+  Future<void> createRideRequest() async {
+    final pickup = context.read(appStateProvider).pickupAddress;
+    final destination = context.read(appStateProvider).destinationAddress;
+    final currentUserData = context.read(appStateProvider).currentUserData;
+    Geoflutterfire geo = Geoflutterfire();
+
+    final rideRequest = RideRequest(
+      status: "waiting",
+      riderId: currentUserData.uid,
+      riderName: currentUserData.username,
+      riderPhone: currentUserData.phoneNumber,
+      createdAt: DateTime.now(),
+      paymentMethod: "cash",
+      pickupAddress: pickup.placeName,
+      destinationAddress: destination.placeName,
+      pickupLocation: geo
+          .point(
+            latitude: pickup.latitude,
+            longitude: pickup.longitude,
+          )
+          .data,
+      destinationLocation: geo
+          .point(
+            latitude: destination.latitude,
+            longitude: destination.longitude,
+          )
+          .data,
+    );
+
+    final _rideRefId = await context
+        .read(databaseProvider)
+        .createRideRequest(rideRequest: rideRequest);
+
+    setState(() => rideRefId = _rideRefId);
+  }
+
   Future<void> showRequestSheet() async {
+    await createRideRequest();
     var _requestSheetController = scaffoldKey.currentState.showBottomSheet(
       (context) {
         return Container(

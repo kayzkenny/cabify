@@ -1,7 +1,8 @@
-import 'package:cabify/services/firestore_service.dart';
-import 'package:cabify/shared/firestore_path.dart';
 import 'package:meta/meta.dart';
+import 'package:cabify/shared/firestore_path.dart';
 import 'package:cabify/models/user_data_model.dart';
+import 'package:cabify/models/ride_request_model.dart';
+import 'package:cabify/services/firestore_service.dart';
 
 abstract class Database {
   /// Return [UserData] as a stream
@@ -14,7 +15,7 @@ abstract class Database {
   Future<void> updateUserData({@required UserData userData});
 
   /// Creates a ride quest
-
+  Future<void> createRideRequest({@required RideRequest rideRequest});
 }
 
 class FirestoreDatabase implements Database {
@@ -44,6 +45,14 @@ class FirestoreDatabase implements Database {
     _service.updateData(
       path: FirestorePath.userData(uid),
       data: userData.toMap(),
+    );
+  }
+
+  @override
+  Future<String> createRideRequest({@required RideRequest rideRequest}) {
+    return _service.addData(
+      path: FirestorePath.rideRequests(),
+      data: rideRequest.toMap(),
     );
   }
 }
