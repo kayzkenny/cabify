@@ -16,6 +16,7 @@ class UserData {
   /// Convert userData to map such as a firestore document
   Map<String, dynamic> toMap() {
     return {
+      'email': email,
       'username': username,
       'phoneNumber': phoneNumber,
     };

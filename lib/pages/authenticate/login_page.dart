@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
         setState(() => loading = false);
 
         if (user != null) {
-          Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/');
         }
       } on FirebaseAuthException catch (e) {
         showErrorDialog(

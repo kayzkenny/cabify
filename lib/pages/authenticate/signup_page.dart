@@ -5,8 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:cabify/shared/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cabify/widgets/error_dialog.dart';
+import 'package:cabify/models/user_data_model.dart';
 import 'package:cabify/providers/auth_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cabify/providers/database_provider.dart';
 
 class SignUpPage extends StatefulWidget {
   SignUpPage({Key key}) : super(key: key);
@@ -21,6 +23,8 @@ class _SignUpPageState extends State<SignUpPage> {
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final usernameController = TextEditingController();
+  final phoneNumberController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
   @override
@@ -33,17 +37,30 @@ class _SignUpPageState extends State<SignUpPage> {
     Future<void> createUserWithEmailAndPassword() async {
       try {
         setState(() => loading = true);
+
         final user = await context
             .read(authServiceProvider)
             .createUserWithEmailAndPassword(
               emailController.text,
               passwordController.text,
             );
-        setState(() => loading = false);
 
         if (user != null) {
-          Navigator.pushReplacementNamed(context, '/home');
+          var currentUserData = UserData(
+            uid: user.uid,
+            email: emailController.text.trim(),
+            username: usernameController.text.trim(),
+            phoneNumber: phoneNumberController.text.trim(),
+          );
+
+          await context
+              .read(databaseProvider)
+              .setUserData(userData: currentUserData);
+
+          Navigator.pushReplacementNamed(context, '/');
         }
+
+        setState(() => loading = false);
       } on FirebaseAuthException catch (e) {
         showErrorDialog(
           context: context,
@@ -93,6 +110,30 @@ class _SignUpPageState extends State<SignUpPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                TextFormField(
+                  decoration: kFormInputDecoration.copyWith(
+                    labelText: 'Full Name',
+                    hintText: 'Full Name',
+                  ),
+                  cursorColor: Colors.black12,
+                  validator: (value) =>
+                      value.isEmpty ? 'Enter your name' : null,
+                  controller: usernameController,
+                  keyboardType: TextInputType.name,
+                ),
+                SizedBox(height: 16.0),
+                TextFormField(
+                  decoration: kFormInputDecoration.copyWith(
+                    labelText: 'Phone Number',
+                    hintText: 'Phone Number',
+                  ),
+                  cursorColor: Colors.black12,
+                  validator: (value) =>
+                      value.isEmpty ? 'Enter your phone number' : null,
+                  controller: phoneNumberController,
+                  keyboardType: TextInputType.phone,
+                ),
+                SizedBox(height: 16.0),
                 TextFormField(
                   decoration: kFormInputDecoration.copyWith(
                     labelText: 'Email',

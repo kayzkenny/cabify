@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cabify/providers/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeDrawer extends StatelessWidget {
   const HomeDrawer({
@@ -74,8 +76,12 @@ class HomeDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.info_outline),
             title: Text(
-              'About',
+              'Logout',
             ),
+            onTap: () async {
+              await context.read(authServiceProvider).signOut();
+              Navigator.pushReplacementNamed(context, '/');
+            },
           ),
         ],
       ),

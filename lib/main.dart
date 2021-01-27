@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cabify/pages/error_page.dart';
-import 'package:cabify/pages/auth_wrapper.dart';
+import 'package:cabify/pages/landing_page.dart';
 import 'package:cabify/pages/loading_page.dart';
 import 'package:cabify/pages/unknown_page.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cabify/pages/home/home_page.dart';
 import 'package:cabify/providers/app_provider.dart';
+import 'package:cabify/providers/auth_provider.dart';
 import 'package:cabify/pages/search/search_page.dart';
 import 'package:cabify/pages/profile/profile_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,7 +37,11 @@ class App extends ConsumerWidget {
         ),
         onGenerateRoute: (settings) {
           if (settings.name == '/') {
-            return MaterialPageRoute(builder: (context) => AuthWrapper());
+            final user = context.read(authServiceProvider).currentUser();
+
+            return MaterialPageRoute(
+              builder: (context) => user != null ? HomePage() : LandingPage(),
+            );
           }
 
           if (settings.name == '/signup') {

@@ -14,6 +14,9 @@ abstract class Database {
   /// Updates user data with [UserData]
   Future<void> updateUserData({@required UserData userData});
 
+  /// Create user data with [UserData]
+  Future<void> setUserData({@required UserData userData});
+
   /// Creates a ride quest
   Future<void> createRideRequest({@required RideRequest rideRequest});
 
@@ -47,6 +50,15 @@ class FirestoreDatabase implements Database {
   Future<void> updateUserData({@required UserData userData}) async {
     _service.updateData(
       path: FirestorePath.userData(uid),
+      data: userData.toMap(),
+    );
+  }
+
+  @override
+  // ignore: missing_return
+  Future<void> setUserData({@required UserData userData}) {
+    _service.setData(
+      path: FirestorePath.userData(userData.uid),
       data: userData.toMap(),
     );
   }
