@@ -213,7 +213,9 @@ class _RequestCabPageState extends State<RequestCabPage> {
   }
 
   Future<void> cancelRequest() async {
-    // await rideRef.remove();
+    await context
+        .read(databaseProvider)
+        .deleteRideRequest(rideRequestId: rideRefId);
     closeRequestSheet();
     Navigator.pop(context);
 

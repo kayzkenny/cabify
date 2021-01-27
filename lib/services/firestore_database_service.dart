@@ -16,6 +16,9 @@ abstract class Database {
 
   /// Creates a ride quest
   Future<void> createRideRequest({@required RideRequest rideRequest});
+
+  /// Delete a ride quest
+  Future<void> deleteRideRequest({@required String rideRequestId});
 }
 
 class FirestoreDatabase implements Database {
@@ -53,6 +56,13 @@ class FirestoreDatabase implements Database {
     return _service.addData(
       path: FirestorePath.rideRequests(),
       data: rideRequest.toMap(),
+    );
+  }
+
+  @override
+  Future<void> deleteRideRequest({@required String rideRequestId}) {
+    return _service.deleteData(
+      path: FirestorePath.rideRequest(rideRequestId),
     );
   }
 }
